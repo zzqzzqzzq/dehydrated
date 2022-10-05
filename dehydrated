@@ -17,18 +17,18 @@ umask 077 # paranoid umask, we're creating private keys
 exec 3>&-
 exec 4>&-
 
-VERSION="0.7.1"
+VERSION="0.7.1-DWH"
 
 # Find directory in which this script is stored by traversing all symbolic links
-SOURCE="${0}"
-while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
-  DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
-  SOURCE="$(readlink "$SOURCE")"
-  [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+DEHYD_SOURCE="${0}"
+while [ -h "$DEHYD_SOURCE" ]; do # resolve $DEHYD_SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname "$DEHYD_SOURCE" )" && pwd )"
+  DEHYD_SOURCE="$(readlink "$DEHYD_SOURCE")"
+  [[ $DEHYD_SOURCE != /* ]] && DEHYD_SOURCE="$DIR/$DEHYD_SOURCE" # if $DEHYD_SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
 done
-SCRIPTDIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+DEHYD_SCRIPTDIR="$( cd -P "$( dirname "$DEHYD_SOURCE" )" && pwd )"
 
-BASEDIR="${SCRIPTDIR}"
+BASEDIR="${DEHYD_SCRIPTDIR}"
 ORIGARGS=("${@}")
 
 noglob_set() {
@@ -329,7 +329,7 @@ verify_config() {
 load_config() {
   # Check for config in various locations
   if [[ -z "${CONFIG:-}" ]]; then
-    for check_config in "/etc/dehydrated" "/usr/local/etc/dehydrated" "${PWD}" "${SCRIPTDIR}"; do
+    for check_config in "/etc/dehydrated" "/usr/local/etc/dehydrated" "${PWD}" "${DEHYD_SCRIPTDIR}"; do
       if [[ -f "${check_config}/config" ]]; then
         BASEDIR="${check_config}"
         CONFIG="${check_config}/config"
@@ -587,7 +587,7 @@ init_system() {
   fi
 
   # Export some environment variables to be used in hook script
-  export WELLKNOWN BASEDIR CERTDIR ALPNCERTDIR CONFIG COMMAND
+  export WELLKNOWN BASEDIR CERTDIR ALPNCERTDIR CONFIG COMMAND DEHYD_SCRIPTDIR DEHYD_SOURCE
 
   # Checking for private key ...
   register_new_key="no"
@@ -1511,7 +1511,7 @@ command_version() {
   echo "https://dehydrated.io"
   echo ""
   echo "Dehydrated version: ${VERSION}"
-  revision="$(cd "${SCRIPTDIR}"; git rev-parse HEAD 2>/dev/null || echo "unknown")"
+  revision="$(cd "${DEHYD_SCRIPTDIR}"; git rev-parse HEAD 2>/dev/null || echo "unknown")"
   echo "GIT-Revision: ${revision}"
   echo ""
   # shellcheck disable=SC1091
