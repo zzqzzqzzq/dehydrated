@@ -318,7 +318,7 @@ verify_config() {
 load_config() {
   # Check for config in various locations
   if [[ -z "${CONFIG:-}" ]]; then
-    for check_config in "/etc/dehydrated" "/usr/local/etc/dehydrated" "${PWD}" "${SCRIPTDIR}"; do
+    for check_config in "/etc/dehydrated" "/usr/local/etc/dehydrated" "${PWD}" "${DEHYD_SCRIPTDIR}"; do
       if [[ -f "${check_config}/config" ]]; then
         BASEDIR="${check_config}"
         CONFIG="${check_config}/config"
@@ -537,6 +537,8 @@ load_config() {
 init_system() {
   load_config
 
+  echo "# INFO: init_system() called..."
+
   # Lockfile handling (prevents concurrent access)
   if [[ -n "${LOCKFILE}" ]]; then
     LOCKDIR="$(dirname "${LOCKFILE}")"
@@ -576,7 +578,7 @@ init_system() {
   fi
 
   # Export some environment variables to be used in hook script
-  export WELLKNOWN BASEDIR CERTDIR ALPNCERTDIR CONFIG COMMAND SCRIPTDIR SOURCE
+  export WELLKNOWN BASEDIR CERTDIR ALPNCERTDIR CONFIG COMMAND DEHYD_SCRIPTDIR DEHYD_SOURCE DEHYD_FUNCS
 
   # Checking for private key ...
   register_new_key="no"
@@ -1500,7 +1502,7 @@ command_version() {
   echo "https://dehydrated.io"
   echo ""
   echo "Dehydrated version: ${VERSION}"
-  revision="$(cd "${SCRIPTDIR}"; git rev-parse HEAD 2>/dev/null || echo "unknown")"
+  revision="$(cd "${DEHYD_SCRIPTDIR}"; git rev-parse HEAD 2>/dev/null || echo "unknown")"
   echo "GIT-Revision: ${revision}"
   echo ""
   # shellcheck disable=SC1091
